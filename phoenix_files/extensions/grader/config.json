@@ -1,0 +1,5 @@
+{
+  "compile": ["javac", "-d", "%SDIR%/submissions/%STUDNAME%/", "-classpath", "%SDIR%/submissions/%STUDNAME%/"],
+  "run": ["java", "%EXEC%"]
+}
+

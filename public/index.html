@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/index.css" />
+    <script src="/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.12.5/ace.js"></script>
+
+    <title>Schoology Grader</title>
+  </head>
+  <body>
+    <div id="menu">
+      <div id="menu-content">
+        <button id="upload-zip" class="menu-item" onclick="uploadZip()">Upload Zip...</button>
+        <span id="class-select"><select class="menu-item" id="classname"></select><button id="setclass" onclick="setClassName()">Set</button></span>
+        <p class="menu-item">
+          Grading Options: Alt+Shift
+          <br>
+          Show Source: Alt+Z
+          <br>
+          Show Output: Alt+X
+          <br>
+          Show Javadoc: Alt+V;
+          <br>
+          Previous Student: Alt+V
+          <br>
+          Next Student: Alt+B
+          <br>
+          Compile & Run: Alt+Space
+          <br>
+          Show/Hide Menu: Alt+Escape
+        </p>
+      </div>
+    </div>
+    <div id="top">
+      <div id="code"></div>
+      <div id="doc" style="display: none;"></div>
+      <div id="right">
+        <div id="rubric">
+          Put the rubric/README here
+        </div>
+        <div id="files">
+          Loading...
+        </div>
+      </div>
+    </div>
+    <div id="bottom">
+      <div id="bl">
+        <div id="name" class="bl_item">
+          Loading...
+        </div>
+        <button id="bll" class="bl_item studnav" onclick="setSource()">
+          Source (S, Z)
+        </button>
+        <button id="blm" class="bl_item studnav" onclick="setOutput()">
+          Output (O, X)
+        </button>
+        <button id="blr" class="bl_item studnav" onclick="setDocumenation()">
+          Documentation (D, C)
+        </button>
+      </div>
+      <div id="br">
+        <button id="back" class="studnav" onclick="prevStudent()">Back (P, V)</button>
+        <button id="next" class="studnav" onclick="getUngraded()">Next (N, B)</button>
+      </div>
+    </div>
+  </body>
+</html>
