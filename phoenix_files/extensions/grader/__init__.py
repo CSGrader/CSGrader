@@ -1,4 +1,4 @@
-  import subprocess, os, json, easygui, time
+import subprocess, os, json, easygui, time
 from flask import redirect as FLASK_REDIRECT
 
 sdir = os.getcwd() + "/phoenix_files/extensions/grader"
