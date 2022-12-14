@@ -1,16 +1,23 @@
-import subprocess, os, json, easygui, time
+import subprocess, os, json, easygui, time, multiprocessing
 from flask import redirect as FLASK_REDIRECT
+from webappify import WebApp as webappify
 
-sdir = os.getcwd() + "/phoenix_files/extensions/grader"
+
+sdir = os.path.expanduser("~/Desktop/Grader")
 
 # Create the assignment directory if it does not already exist
+try:
+  os.mkdir(sdir)
+except FileExistsError:
+  pass
+
 try:
   os.mkdir(f"{sdir}/assignment/")
 except FileExistsError:
   pass
 
 # Remove the cache directories from previous runs
-subprocess.Popen(['rm', '-rf', f'{sdir}/.cache/', f'{sdir}/submissions/']).communicate()
+subprocess.Popen(['rm', '-rf', f'{sdir}/cache/', f'{sdir}/submissions/']).communicate()
 
 
 
@@ -191,10 +198,10 @@ def run(app, pconfig={}, pcache={}):
 
     # Unzip the submissions into a cache directory
     print('heehoo')
-    subprocess.Popen(['unzip', '-o', f'{sdir}/assignment/*.zip', '-d', f'{sdir}/.cache/']).communicate()
+    subprocess.Popen(['unzip', '-o', f'{sdir}/assignment/*.zip', '-d', f'{sdir}/cache/']).communicate()
 
     # Get the list of students, and create another cache directory
-    students = os.listdir(f'{sdir}/.cache')
+    students = os.listdir(f'{sdir}/cache')
     print(students)
     os.mkdir(f'{sdir}/submissions/')
 
@@ -203,7 +210,7 @@ def run(app, pconfig={}, pcache={}):
     processes = []  # The list of running unzip processes
     for s in students:
       # Get the latest attempts' directory
-      attempts = os.listdir(f'{sdir}/.cache/'+s)
+      attempts = os.listdir(f'{sdir}/cache/'+s)
       latest = attempts[len(attempts) - 1]
 
       # Reformat students' names from "Last, First - UserID" to "First_Last", and add it to the list of student names
@@ -212,7 +219,7 @@ def run(app, pconfig={}, pcache={}):
       snames.append(name)
 
       # Queue unzip of each students' assignment
-      processes.append(subprocess.Popen(['unzip', '-o', f'{sdir}/.cache/{s}/{latest}/*', '-d', f'{sdir}/submissions/{name}']))
+      processes.append(subprocess.Popen(['unzip', '-o', f'{sdir}/cache/{s}/{latest}/*', '-d', f'{sdir}/submissions/{name}']))
 
     # Wait for all extraction processes to finish
     for p in processes:
@@ -226,7 +233,7 @@ def run(app, pconfig={}, pcache={}):
     json.dump(grades_list, open(f'{sdir}/assignment/grades.json', 'w'))
 
     # Remove the cache directories
-    subprocess.Popen(['rm', '-rf', f'{sdir}/.cache/', f'{sdir}/submissions/']).communicate()
+    subprocess.Popen(['rm', '-rf', f'{sdir}/cache/', f'{sdir}/submissions/', f'{sdir}/assignment']).communicate()
 
 
   @app.route("/run/<s>/<CLASSNAME>")
@@ -273,4 +280,13 @@ def run(app, pconfig={}, pcache={}):
       })
 
     return student_settings[s]
+
+  # Open a new QTWebEngine window
+  def showWindow():
+    wa = webappify('Schoology Grader', f'http://127.0.0.1:{pconfig["port"]}/', '')
+    wa.run()
+
+  proc = multiprocessing.Process(target=showWindow)
+  proc.start()
+
 

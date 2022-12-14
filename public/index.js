@@ -35,20 +35,20 @@ window.onload = function() {
   setSource();
 
   setInterval(function() {
-    window.nameel.innerHTML = window.student.name.replace('_', ' ') + "<br>" + window.fname + "<br>" + "Show menu with Alt+Escape";
+    window.nameel.innerHTML = window.student.name.replace('_', ' ') + "<br>" + window.fname + "<br>" + "Show menu with Alt+M";
   }, 150);
 
   document.querySelector('html').addEventListener('keydown', function(e) {
     // console.log(e);
     if (e.altKey && [
-      'z', 's',      // Show source
-      'x', 'o',      // Show output
-      'c', 'd',      // Show documentation
-      'v', 'p',      // Previous student
-      'b', 'n',      // Next student
-      ' ', 'Enter',  // Run Code
-      'm',      // Show menu
-      'Shift'        // Show grading options
+      'z', 's',           // Show source
+      'x', 'o',           // Show output
+      'c', 'd',           // Show documentation
+      'v', 'p',           // Previous student
+      'b', 'n',           // Next student
+      ' ', 'Enter',       // Run Code
+      'm', 'Escape',      // Show menu
+      'Control', 'Shift'  // Show grading options
     ].includes(e.key)) {
       e.preventDefault();
       if (e.key == 'z' || e.key == 's') {
@@ -63,13 +63,14 @@ window.onload = function() {
         getUngraded();
       } else if (e.key == ' ' || e.key == 'Enter') {
         runCode();
-      } else if (e.key == 'm') {
+      } else if (e.key == 'm' || e.key == 'Escape') {
         showMenu();
-      } else if (e.key == 'Shift') {
+      } else if (e.key == 'Control' || e.key == 'Shift') {
         showGradingOptions();
       }
     }
   });
+
 
   getUngraded();
 }
@@ -232,7 +233,7 @@ function runCode() {
     }
     xhr.send();
   } else {
-    window.student.output = "Please set the main class name in the menu (Alt+Escape).";
+    window.student.output = "Please set the main class name in the menu (Alt+M).";
     setOutput();
   }
 }
