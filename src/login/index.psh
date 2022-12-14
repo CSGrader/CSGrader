@@ -1,0 +1,27 @@
+!doctype HTML
+html :{
+  head :{
+    link type=text/css rel=stylesheet href=/index.css /
+    script src=/Encryption.js :{
+    };
+    script src=/login/index.js :{
+    };
+    script src=/jquery-3.6.2.min.js :{
+    };
+    title *(Login)*
+  };
+  body :{
+    h1 *(Login)*
+    br
+    div id=loginbox :{
+      input type=text placeholder=Username id=username /
+      input type=password placeholder=Password id=password /
+      button id=login onclick=login(); *(Login)*
+      button id=register onclick=register(); *(Register)*
+    };
+    br
+    div id=foot :{
+      a href=/grader *(The prototype grader is still here)*
+    };
+  };
+};

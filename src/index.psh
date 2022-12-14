@@ -1,0 +1,17 @@
+!doctype HTML
+html :{
+  head :{
+    link type=text/css rel=stylesheet href=/index.css /
+    title *(CSGrader)*
+  };
+  body :{
+    h1 *(CSGrader)*
+    br
+    h2 *(Discover greatness for your students)*
+    br
+    br
+    a href=/login *(Here's the WIP login page)*
+    br
+    a href=/grader *(Here's the prototype grader, if you still want to see it.)*
+  };
+};

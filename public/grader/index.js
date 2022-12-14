@@ -5,6 +5,7 @@ window.docel;
 window.menuel;
 window.fileel;
 window.CLASSNAME = '';
+window.files = {};
 
 window.student = {
   output: "There was no output.",
@@ -18,6 +19,19 @@ window.student = {
 function setCode(v, e) {
   e.setValue(v);
   e.getSelection().clearSelection();
+}
+
+// Interface with the new API to get all students and their files
+function getFiles() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/files');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+        window.files = JSON.parse(xhr.responseText);
+        getUngraded();
+        }
+    }
+    xhr.send();
 }
 
 window.onload = function() {
@@ -249,4 +263,3 @@ function showGradingOptions() {
 function setClassName() {
   window.CLASSNAME = window.cnel.options[window.cnel.selectedIndex].value;
 }
-

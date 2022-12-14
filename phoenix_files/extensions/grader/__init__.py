@@ -1,7 +1,7 @@
 import subprocess, os, json, easygui, time, multiprocessing
-from flask import redirect as FLASK_REDIRECT
+from flask import redirect as FLASK_REDIRECT, session, request
 from webappify import WebApp as webappify
-
+from . import Encryption
 
 sdir = os.path.expanduser("~/Desktop/Grader")
 
@@ -38,6 +38,72 @@ grades_list = {}
 if 'grades.json' in os.listdir(f'{sdir}/assignment/'):
   grades_list = json.load(open(f'{sdir}/assignment/grades.json'))
 
+# Create Public and Private login keys
+priv, pub = Encryption.RSA.newkeys()
+
+pw_pub0 = None
+pw_pub1 = None
+
+try:
+  pw_pub0, pw_pub1 = json.load(open(f'{sdir}/data.json'))['password_keys']
+except FileNotFoundError:
+  print('No accounts file found. Generating keys and creating an admin account...')
+  # Create Password Encryption keys
+  # I was too lazy to implement SHA, so I just used RSA and threw away the private key
+  pw_priv0, pw_pub0 = Encryption.RSA.newkeys()
+  pw_priv1, pw_pub1 = Encryption.RSA.newkeys()
+  del(pw_priv0)
+  del(pw_priv1)
+  
+  # With this much stuff, I should probably switch to a database, which would
+  # allow for multiple simultaneous connections of reading and writing course content
+  json.dump({
+    'password_keys': [
+      pw_pub0,
+      pw_pub1
+    ],
+    'org': {
+      'default': {
+        'name': 'Default Organization',
+        'desc': 'Default organization',
+        'users': {
+          'admin': {
+            # Create a default admin account, username: admin, password: admin
+            'pwd': Encryption.RSA.encode(pw_pub0, Encryption.RSA.encode(pw_pub1, 'admin')),
+            # Roles rank from highest to lowest being admin, teacher, assistant, student
+            'roles': ['admin']
+          }
+        },
+        'classes': {
+          'Default AP CS A class': {
+            'subject': 'AP CS A',
+            'desc': 'Default AP CS A class',
+            'users': {
+              # Username: ['teacher', 'assistant', 'student']
+              'admin': {'role': ['teacher'], 'content': {}}
+            },
+            'units': {
+              'Unit 1 - Hello World': {
+                'subtitle': 'Getting started with Java',
+                'desc': 'This unit will teach you how to write your first Java program.',
+                'content': {
+                  '1.1 - Hello World': {
+                    'desc': 'Write a program that prints "Hello World!" to the console.',
+                    'points': 10,
+                    'instructions': 'Use the System.out.println() method to print "Hello World!" to the console.',
+                    'files': {
+                      'HelloWorld.java': 'public class HelloWorld {\n  public static void main(String[] args) {\n    // Write your code here\n  }\n}'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+  }, open(f'{sdir}/data.json', 'w'))
+  print('Done. There is now an admin account with the username "admin" and the password "admin".')
 
 # # Define a simple Yes/No input mechanism
 # def ask(q, y=None):
@@ -168,9 +234,50 @@ def postbuild(*args, **kwargs):
 
 
 def run(app, pconfig={}, pcache={}):
-  @app.route("/file/<student>/<file>")
-  def get_student_file(student, file):
-    return send_from_directory(f"{sdir}/submissions/{student}", file)
+  @app.route('/api/public_key')
+  def api_public_key():
+    return pub
+
+  @app.route('/api/login', methods=['POST'])
+  def api_login():
+    data = request.get_json()
+    print(data)
+    users = json.load(open(f'{sdir}/data.json'))
+    p = Encryption.RSA.encode(pw_pub0, Encryption.RSA.encode(pw_pub1, Encryption.RSA.decode(priv, data['password'])))
+    print(p)
+    if data['username'] in users.keys():
+      if users['org']['default']['users'][data['username']]['pwd'] == p:
+        session['username'] = data['username']
+        return FLASK_REDIRECT('/dashboard')
+      else:
+        return p, 403
+    else:
+      return p, 403
+
+  @app.route('/api/register', methods=['POST'])
+  def api_register():
+    data = request.get_json()
+    users = json.load(open(f'{sdir}/data.json'))
+    if data['username'] in users.keys():
+      return '', 403
+    else:
+      users['org']['default']['users'][data['username']] = {'pwd': data['password'], 'roles': ['unverified']}
+      json.dump(users, open(f'{sdir}/users.json', 'w'))
+      session['username'] = data['username']
+      return FLASK_REDIRECT('/dashboard')
+
+  ## PENDING REWRITE ##
+  @app.route("/files")
+  def get_student_files():
+    # Create a dict of dicts, files['student_name']['file_name'] = file_contents
+    files = {}
+    for s in os.listdir(f"{sdir}/submissions/"):
+      files[s] = {}
+      for f in os.listdir(f"{sdir}/submissions/{s}"):
+        files[s][f] = open(f"{sdir}/submissions/{s}/{f}").read()
+
+    # Convert files into JSON
+    return json.dumps(files)
 
 
   @app.route("/doc/<student>")
@@ -197,12 +304,10 @@ def run(app, pconfig={}, pcache={}):
 
 
     # Unzip the submissions into a cache directory
-    print('heehoo')
     subprocess.Popen(['unzip', '-o', f'{sdir}/assignment/*.zip', '-d', f'{sdir}/cache/']).communicate()
 
     # Get the list of students, and create another cache directory
     students = os.listdir(f'{sdir}/cache')
-    print(students)
     os.mkdir(f'{sdir}/submissions/')
 
     # Queue extraction of the latest submission to the ./submissions/{Student Name}/ folder
@@ -287,6 +392,6 @@ def run(app, pconfig={}, pcache={}):
     wa.run()
 
   proc = multiprocessing.Process(target=showWindow)
-  proc.start()
+  # proc.start()
 
 
