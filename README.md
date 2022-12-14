@@ -5,8 +5,11 @@ backend is written in python.
 
 ## Install Required Dependencies
 ```bash
-pip install phoenix-ws easygui PyQt5
+pip install phoenix-ws easygui
 ```
+It also uses NW.JS for it's frontend UI. Install that, according to the method available
+for your Operating System. (We might undo that, and make everything run entirely in the
+browser, but for now, it is a requirement.)
 
 ## Start Server
 ```bash
