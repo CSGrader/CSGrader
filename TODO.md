@@ -8,6 +8,7 @@ Grader:
  - Add a list view for managing students and grades.
  - Provide a way for easy export of grades into other
    formats. (Maybe)
+ - Auto-prettify/button to prettify Java code.
 
 Future Experimental Ideas:
  - Add a class dashboard for teachers to manage students
